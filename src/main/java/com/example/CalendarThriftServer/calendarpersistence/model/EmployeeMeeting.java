@@ -1,4 +1,4 @@
-package calendarpersistence.model;
+package com.example.CalendarThriftServer.calendarpersistence.model;
 
 import javax.persistence.Column;
 import javax.persistence.EmbeddedId;

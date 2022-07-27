@@ -1,11 +1,11 @@
 package com.example.CalendarThriftServer;
 
 
-import calendarpersistence.model.CompositeKey;
-import calendarpersistence.model.EmployeeMeeting;
-import calendarpersistence.model.Meeting;
-import calendarpersistence.repository.EmployeeMeetingRepository;
-import calendarpersistence.repository.MeetingRepository;
+import com.example.CalendarThriftServer.calendarpersistence.model.CompositeKey;
+import com.example.CalendarThriftServer.calendarpersistence.model.EmployeeMeeting;
+import com.example.CalendarThriftServer.calendarpersistence.model.Meeting;
+import com.example.CalendarThriftServer.calendarpersistence.repository.EmployeeMeetingRepository;
+import com.example.CalendarThriftServer.calendarpersistence.repository.MeetingRepository;
 import org.apache.thrift.TException;
 import org.example.CalendarThriftConfiguration.*;
 import org.junit.jupiter.api.Test;

@@ -1,9 +1,8 @@
 package com.example.CalendarThriftServer.objectmapper;
 
-import calendarpersistence.model.CompositeKey;
-import calendarpersistence.model.EmployeeMeeting;
+import com.example.CalendarThriftServer.calendarpersistence.model.CompositeKey;
+import com.example.CalendarThriftServer.calendarpersistence.model.EmployeeMeeting;
 import org.example.CalendarThriftConfiguration.Date;
-import org.example.CalendarThriftConfiguration.EmployeeStatusDataRequest;
 import org.example.CalendarThriftConfiguration.MeetingDetails;
 
 import java.time.LocalDate;

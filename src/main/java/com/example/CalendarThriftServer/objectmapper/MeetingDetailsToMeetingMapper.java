@@ -1,11 +1,10 @@
 package com.example.CalendarThriftServer.objectmapper;
 
-import calendarpersistence.model.Meeting;
+import com.example.CalendarThriftServer.calendarpersistence.model.Meeting;
 import org.example.CalendarThriftConfiguration.Date;
 import org.example.CalendarThriftConfiguration.MeetingDetails;
 import org.example.CalendarThriftConfiguration.Time;
 
-import javax.persistence.Column;
 import java.time.LocalDate;
 import java.time.LocalTime;
 

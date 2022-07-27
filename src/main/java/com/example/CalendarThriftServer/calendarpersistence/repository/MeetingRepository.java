@@ -1,6 +1,6 @@
-package calendarpersistence.repository;
+package com.example.CalendarThriftServer.calendarpersistence.repository;
 
-import calendarpersistence.model.Meeting;
+import com.example.CalendarThriftServer.calendarpersistence.model.Meeting;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;

@@ -1,12 +1,10 @@
 package com.example.CalendarThriftServer;
 
-import calendarpersistence.model.CompositeKey;
-import calendarpersistence.model.EmployeeMeeting;
-import calendarpersistence.model.Meeting;
-import calendarpersistence.repository.EmployeeMeetingRepository;
-import calendarpersistence.repository.MeetingRepository;
+import com.example.CalendarThriftServer.calendarpersistence.model.EmployeeMeeting;
+import com.example.CalendarThriftServer.calendarpersistence.model.Meeting;
+import com.example.CalendarThriftServer.calendarpersistence.repository.EmployeeMeetingRepository;
+import com.example.CalendarThriftServer.calendarpersistence.repository.MeetingRepository;
 import com.example.CalendarThriftServer.objectmapper.DateToLocalDateMapper;
-import com.example.CalendarThriftServer.objectmapper.EmployeeAvailableRequestObject;
 import com.example.CalendarThriftServer.objectmapper.EmployeeListToStatusListMapper;
 import com.example.CalendarThriftServer.objectmapper.MeetingDetailsToMeetingMapper;
 import org.apache.thrift.TException;
@@ -17,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -62,8 +59,8 @@ public class MeetingHandler implements MeetingSvc.Iface
 
     @Override
     public List<String> checkEmployeeAvailability(EmployeeAvailabilityDataRequest employeeAvailabilityDataRequest) throws TException {
-        EmployeeAvailableRequestObject mappedRequest = EmployeeAvailableRequestObject.mapDataRequestToObject(employeeAvailabilityDataRequest);
-        List<String > employeesNotAvailable = meetingRepository.checkEmployeeAvailability(mappedRequest.getListOfEmployee(),mappedRequest.getDateOfMeeting(),mappedRequest.getStartTime(),mappedRequest.getEndTime());
+        DateToLocalDateMapper formattedDateTime = DateToLocalDateMapper.map(employeeAvailabilityDataRequest.dateOfMeeting,employeeAvailabilityDataRequest.getStartTime(),employeeAvailabilityDataRequest.getEndTime());
+        List<String > employeesNotAvailable = meetingRepository.checkEmployeeAvailability(employeeAvailabilityDataRequest.getListOfEmployeeId(),formattedDateTime.getDateOfMeeting(),formattedDateTime.getStartTime(),formattedDateTime.getEndTime());
         if(employeesNotAvailable.size()>0){
             return employeesNotAvailable;
         }
