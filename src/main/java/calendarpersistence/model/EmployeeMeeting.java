@@ -13,6 +13,24 @@ public class EmployeeMeeting {
     @Column
     String status;
 
+    public CompositeKey getCompositeKey() {
+        return compositeKey;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public LocalDate getDate() {
+        return date;
+    }
+
+    public EmployeeMeeting(CompositeKey compositeKey, String status, LocalDate date) {
+        this.compositeKey = compositeKey;
+        this.status = status;
+        this.date = date;
+    }
+
     @Column
     LocalDate date;
 }

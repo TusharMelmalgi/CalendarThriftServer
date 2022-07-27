@@ -100,4 +100,8 @@ public class Meeting {
     public LocalDateTime getUpdatedDate() {
         return updatedDate;
     }
+
+    public void setMeetId(String meetId) {
+        this.meetId = meetId;
+    }
 }

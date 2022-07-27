@@ -1,5 +1,6 @@
 package com.example.CalendarThriftServer;
 
+import calendarpersistence.model.CompositeKey;
 import calendarpersistence.model.EmployeeMeeting;
 import calendarpersistence.model.Meeting;
 import calendarpersistence.repository.EmployeeMeetingRepository;
@@ -12,8 +13,11 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
+
 @Service
 public class MeetingHandler implements MeetingSvc.Iface
 {
@@ -56,7 +60,7 @@ public class MeetingHandler implements MeetingSvc.Iface
         Date date = employeeAvailabilityDataRequest.getDateOfMeeting();
         Time startTimeFormat = employeeAvailabilityDataRequest.getStartTime();
         Time endTimeFormat = employeeAvailabilityDataRequest.getEndTime();
-        LocalDate dateOfMeeting = LocalDate.of(date.dayOfMonth,date.getMonth(),date.getYear());
+        LocalDate dateOfMeeting = LocalDate.of(date.getYear(),date.getMonth(),date.getDayOfMonth());
         LocalTime startTime = LocalTime.of(startTimeFormat.getHours(),startTimeFormat.getMins(),startTimeFormat.getSeconds());
         LocalTime endTime = LocalTime.of(endTimeFormat.getHours(),endTimeFormat.getMins(),endTimeFormat.getSeconds());
         List<String > employeesNotAvailable = meetingRepository.checkEmployeeAvailability(employeeAvailabilityDataRequest.listOfEmployeeId,dateOfMeeting,startTime,endTime);
@@ -68,21 +72,81 @@ public class MeetingHandler implements MeetingSvc.Iface
 
     @Override
     public String addMeetingDetails(MeetingDetails meetingDetails) throws TException {
-        return null;
+        Date date = meetingDetails.getDateOfMeeting();
+        Time startTimeFormat = meetingDetails.getStartTime();
+        Time endTimeFormat = meetingDetails.getEndTime();
+        LocalDate dateOfMeeting = LocalDate.of(date.getYear(),date.getMonth(),date.getDayOfMonth());
+        LocalTime startTime = LocalTime.of(startTimeFormat.getHours(),startTimeFormat.getMins(),startTimeFormat.getSeconds());
+        LocalTime endTime = LocalTime.of(endTimeFormat.getHours(),endTimeFormat.getMins(),endTimeFormat.getSeconds());
+        Meeting  addMeeting = new Meeting(
+                meetingDetails.getDescription(),
+                meetingDetails.getAgenda(),
+                meetingDetails.getOwnerId(),
+                dateOfMeeting,
+                startTime,
+                endTime,
+                meetingDetails.getRoomId(),
+                meetingDetails.isIsAvailable()
+        );
+        try {
+            Meeting savedMeeting = meetingRepository.save(addMeeting);
+            String id = savedMeeting.getMeetId();
+            return id;
+        }catch (DataAccessException ex){
+            throw new RuntimeException(ex.getMessage());
+        }
+
+
     }
 
     @Override
     public boolean addEmployeeMeetingStatus(List<EmployeeStatusDataRequest> list) throws TException {
-        return false;
+        List<EmployeeMeeting> employeeMeetingsStatus = new ArrayList<>();
+        for(EmployeeStatusDataRequest requests : list){
+            CompositeKey ck = new CompositeKey(requests.getEmployeeId(),requests.getMeetingId());
+            Date dateOfMeeting = requests.getDateOfMeeting();
+            LocalDate date = LocalDate.of(dateOfMeeting.getYear(),dateOfMeeting.getMonth(),dateOfMeeting.getDayOfMonth());
+            EmployeeMeeting requestFormatter = new EmployeeMeeting(ck,requests.getStatus(),date);
+            employeeMeetingsStatus.add(requestFormatter);
+        }
+        try {
+            employeeMeetingRepository.saveAll(employeeMeetingsStatus);
+            return true;
+        }catch (DataAccessException ex){
+            throw new RuntimeException(ex.getMessage());
+        }
+
     }
 
     @Override
     public int findFreeMeetingRoom(FindFreeMeetingRoomDataRequest findFreeMeetingRoomDataRequest) throws TException {
-        return 0;
+        Date date = findFreeMeetingRoomDataRequest.getDateOfMeeting();
+        Time startTimeFormat = findFreeMeetingRoomDataRequest.getStartTime();
+        Time endTimeFormat = findFreeMeetingRoomDataRequest.getEndTime();
+        LocalDate dateOfMeeting = LocalDate.of(date.getYear(),date.getMonth(),date.getDayOfMonth());
+        LocalTime startTime = LocalTime.of(startTimeFormat.getHours(),startTimeFormat.getMins(),startTimeFormat.getSeconds());
+        LocalTime endTime = LocalTime.of(endTimeFormat.getHours(),endTimeFormat.getMins(),endTimeFormat.getSeconds());
+        List<Integer> occupiedRooms = new ArrayList<>(meetingRepository.findFreeMeetingRoom(findFreeMeetingRoomDataRequest.getMeetingRoomsInOffice(),dateOfMeeting,startTime,endTime));
+        List<Integer> roomsInOffice = new ArrayList<>(findFreeMeetingRoomDataRequest.getMeetingRoomsInOffice());
+        roomsInOffice.removeAll(occupiedRooms);
+        if(roomsInOffice.size()==0){
+            return 0;
+        }
+        return roomsInOffice.get(0);
     }
 
     @Override
     public boolean meetingRoomAvailable(MeetingRoomAvailableDataRequest meetingRoomAvailableDataRequest) throws TException {
-        return false;
+        Date date = meetingRoomAvailableDataRequest.getDateOfMeeting();
+        Time startTimeFormat = meetingRoomAvailableDataRequest.getStartTime();
+        Time endTimeFormat = meetingRoomAvailableDataRequest.getEndTime();
+        LocalDate dateOfMeeting = LocalDate.of(date.getYear(),date.getMonth(),date.getDayOfMonth());
+        LocalTime startTime = LocalTime.of(startTimeFormat.getHours(),startTimeFormat.getMins(),startTimeFormat.getSeconds());
+        LocalTime endTime = LocalTime.of(endTimeFormat.getHours(),endTimeFormat.getMins(),endTimeFormat.getSeconds());
+        int meetingsInRoom = meetingRepository.meetingRoomAvailable(meetingRoomAvailableDataRequest.getRoomId(),dateOfMeeting,startTime,endTime);
+        if(meetingsInRoom>0){
+            return false;
+        }
+        return true;
     }
 }
