@@ -1,6 +1,8 @@
 package com.example.CalendarThriftServer;
 
 
+import calendarpersistence.model.CompositeKey;
+import calendarpersistence.model.EmployeeMeeting;
 import calendarpersistence.model.Meeting;
 import calendarpersistence.repository.EmployeeMeetingRepository;
 import calendarpersistence.repository.MeetingRepository;
@@ -22,7 +24,6 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -115,6 +116,7 @@ class MeetingHandlerTest {
     public void meetingHandlerTest_addMeetingDetails_Failed(){
 
         MeetingDetails meetingDetails = new MeetingDetails(
+                Arrays.asList("xyz-12","xyz-13"),
                 "test meeting",
                 "testing save on repo",
                 "xyz-12",
@@ -138,6 +140,7 @@ class MeetingHandlerTest {
     @Test
     public void meetingHandlerTest_addMeetingDetails_Success() throws TException {
         MeetingDetails meetingDetails = new MeetingDetails(
+                Arrays.asList("xyz-12","xyz-23"),
                 "test meeting",
                 "testing save on repo",
                 "xyz-12",
@@ -169,10 +172,10 @@ class MeetingHandlerTest {
     }
     @Test
     public void meetingHandlerTest_addEmployeeMeetingStatus_Fail(){
-        List<EmployeeStatusDataRequest> employeeStatusRequests = new ArrayList<EmployeeStatusDataRequest>();
-        employeeStatusRequests.add(new EmployeeStatusDataRequest("xyz-12","2","pending",new Date(29,8,2022)));
-        employeeStatusRequests.add(new EmployeeStatusDataRequest("xyz-24","2","pending",new Date(29,8,2022)));
-        employeeStatusRequests.add(new EmployeeStatusDataRequest("xyz-35","2","pending",new Date(29,8,2022)));
+        List<EmployeeMeeting> employeeStatusRequests = new ArrayList<EmployeeMeeting>();
+        employeeStatusRequests.add(new EmployeeMeeting(new CompositeKey("xyz-12","2"),"pending",LocalDate.of(2022,8,12)));
+        employeeStatusRequests.add(new EmployeeMeeting(new CompositeKey("xyz-14","2"),"pending",LocalDate.of(2022,8,12)));
+        employeeStatusRequests.add(new EmployeeMeeting(new CompositeKey("xyz-16","2"),"pending",LocalDate.of(2022,8,12)));
         DataAccessException dataAccessException = new DataAccessException("Data cannot be accessed") {
             @Override
             public String getMessage() {
@@ -184,11 +187,10 @@ class MeetingHandlerTest {
     }
     @Test
     public void meetingHandlerTest_addEmployeeMeetingStatus_Success() throws TException {
-        List<EmployeeStatusDataRequest> employeeStatusRequests = new ArrayList<EmployeeStatusDataRequest>();
-        employeeStatusRequests.add(new EmployeeStatusDataRequest("xyz-12","2","pending",new Date(29,8,2022)));
-        employeeStatusRequests.add(new EmployeeStatusDataRequest("xyz-24","2","pending",new Date(29,8,2022)));
-        employeeStatusRequests.add(new EmployeeStatusDataRequest("xyz-35","2","pending",new Date(29,8,2022)));
-     //   Mockito.when(employeeMeetingRepository.saveAll(Mockito.any())).thenThrow(dataAccessException);
+        List<EmployeeMeeting> employeeStatusRequests = new ArrayList<EmployeeMeeting>();
+        employeeStatusRequests.add(new EmployeeMeeting(new CompositeKey("xyz-12","2"),"pending",LocalDate.of(2022,8,12)));
+        employeeStatusRequests.add(new EmployeeMeeting(new CompositeKey("xyz-14","2"),"pending",LocalDate.of(2022,8,12)));
+        employeeStatusRequests.add(new EmployeeMeeting(new CompositeKey("xyz-16","2"),"pending",LocalDate.of(2022,8,12)));
         boolean responseFromEmployeeMeeting = meetingHandler.addEmployeeMeetingStatus(employeeStatusRequests);
         assertTrue(responseFromEmployeeMeeting);
     }
