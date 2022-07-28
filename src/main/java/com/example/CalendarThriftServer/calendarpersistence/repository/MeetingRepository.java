@@ -14,16 +14,19 @@ import java.util.List;
 @Repository
 public interface MeetingRepository extends CrudRepository<Meeting,String> {
 
+    //here
     @Modifying
-    @Query(value = "UPDATE meeting m SET m.is_available = false WHERE m.owner_id=:employee_id AND m.date_of_meeting>:date",nativeQuery = true)
-    public boolean cancelMeetingOfEmployee(@Param("employee_id") String employeeId, @Param("date")LocalDate date);
+    @Query(value = "UPDATE meeting m SET m.is_available = 0 WHERE m.owner_id = :employee_id AND m.date_of_meeting> CURDATE()" , nativeQuery = true)
+    public Integer cancelMeetingOfEmployee(@Param("employee_id") String employeeId);
 
-    @Query(value = "Select em.employee_id FROM meeting m JOIN emp_meetings em ON m.meet_id=em.meeting_id WHERE em.employee_id IN (:list_of_employee) AND m.date_of_meeting =:date AND em.status=’accepted’ AND (m.end_time>:starttime and m.start_time<:endtime)",nativeQuery = true)
+
+    //here
+    @Query(value = "SELECT em.employee_id FROM meeting m JOIN employee_meeting em ON m.meet_id = em.meeting_id WHERE em.employee_id IN (:list_of_employee) AND m.date_of_meeting =:date AND em.status='accepted' AND (m.end_time>:starttime and m.start_time<:endtime)",nativeQuery = true)
     public List<String> checkEmployeeAvailability(@Param("list_of_employee")List<String> listOfEmployee,@Param("date")LocalDate date,@Param("starttime") LocalTime startTime,@Param("endtime")LocalTime endTime);
 
-    @Query(value = "SELECT roomId FROM meeting m where m.date = :date AND m.isAvailable=true AND roomId IN (:list_of_rooms) AND (m.end_time>:starttime and m.start_time<:endtime))",nativeQuery = true)
+    @Query(value = "SELECT m.room_id FROM meeting m where m.date_of_meeting = :date AND m.is_available=true AND m.room_id IN (:list_of_rooms) AND (m.end_time>:starttime and m.start_time<:endtime)",nativeQuery = true)
     public List<Integer> findFreeMeetingRoom(@Param("list_of_rooms")List<Integer> listOfRooms,@Param("date")LocalDate date,@Param("starttime") LocalTime startTime,@Param("endtime")LocalTime endTime);
 
-    @Query(value = "select count(1) from meeting m where m.room_id = :roomId AND m.isAvailable = true AND m.date =:date AND (m.end_time>:starttime and m.start_time<:endtime)",nativeQuery = true)
+    @Query(value = "select count(1) from meeting m where m.room_id = :roomId AND m.is_available = true AND m.date_of_meeting =:date AND (m.end_time>:starttime and m.start_time<:endtime)",nativeQuery = true)
     public int meetingRoomAvailable(@Param("roomId")Integer roomId,@Param("date")LocalDate date,@Param("starttime") LocalTime startTime,@Param("endtime")LocalTime endTime);
 }

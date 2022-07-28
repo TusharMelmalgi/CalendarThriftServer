@@ -12,6 +12,9 @@ public class CompositeKey implements Serializable {
     @Column(name = "meeting_id")
     String meetId;
 
+    public CompositeKey() {
+    }
+
     public String getEmpId() {
         return empId;
     }
@@ -23,5 +26,13 @@ public class CompositeKey implements Serializable {
     public CompositeKey(String empId, String meetId) {
         this.empId = empId;
         this.meetId = meetId;
+    }
+
+    @Override
+    public String toString() {
+        return "CompositeKey{" +
+                "empId='" + empId + '\'' +
+                ", meetId='" + meetId + '\'' +
+                '}';
     }
 }

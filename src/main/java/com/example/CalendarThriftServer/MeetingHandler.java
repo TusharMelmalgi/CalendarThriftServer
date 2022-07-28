@@ -22,7 +22,6 @@ import java.util.List;
 @Service
 public class MeetingHandler implements MeetingSvc.Iface
 {
-
     @Autowired
     MeetingRepository meetingRepository;
 
@@ -34,23 +33,25 @@ public class MeetingHandler implements MeetingSvc.Iface
         return "Alive";
     }
 
+    @Transactional
     @Override
     public boolean cancelMeetingOfRemovedEmployee(String s) throws TException {
         LocalDate date = LocalDate.now();
         try {
-            meetingRepository.cancelMeetingOfEmployee(s, date);
-            employeeMeetingRepository.updateStatusForCancelledMeeting(s, date);
+            meetingRepository.cancelMeetingOfEmployee(s);
+            employeeMeetingRepository.updateStatusForCancelledMeeting(s);
             return true;
         }catch (DataAccessException ex){
             throw new RuntimeException(ex.getMessage());
         }
     }
 
+    @Transactional
     @Override
     public boolean updateStatusOfRemovedEmployee(String s) throws TException {
         LocalDate date = LocalDate.now();
         try {
-            employeeMeetingRepository.updateStatusForRemovedEmployee(s,date);
+            employeeMeetingRepository.updateStatusForRemovedEmployee(s);
             return true;
         }catch (DataAccessException ex){
             throw new RuntimeException(ex.getMessage());
@@ -60,11 +61,14 @@ public class MeetingHandler implements MeetingSvc.Iface
     @Override
     public List<String> checkEmployeeAvailability(EmployeeAvailabilityDataRequest employeeAvailabilityDataRequest) throws TException {
         DateToLocalDateMapper formattedDateTime = DateToLocalDateMapper.map(employeeAvailabilityDataRequest.dateOfMeeting,employeeAvailabilityDataRequest.getStartTime(),employeeAvailabilityDataRequest.getEndTime());
+        System.out.println("inside this");
         List<String > employeesNotAvailable = meetingRepository.checkEmployeeAvailability(employeeAvailabilityDataRequest.getListOfEmployeeId(),formattedDateTime.getDateOfMeeting(),formattedDateTime.getStartTime(),formattedDateTime.getEndTime());
+        System.out.println("outside this");
+        System.out.println(employeesNotAvailable.size());
         if(employeesNotAvailable.size()>0){
             return employeesNotAvailable;
         }
-        return Arrays.asList("All employees free");
+        return Arrays.asList();
     }
 
     @Override
@@ -72,9 +76,12 @@ public class MeetingHandler implements MeetingSvc.Iface
     public String addMeetingDetails(MeetingDetails meetingDetails) throws TException {
         Meeting meetingToBeAdded = MeetingDetailsToMeetingMapper.map(meetingDetails);
         try {
+            System.out.println("here");
             Meeting savedMeeting = meetingRepository.save(meetingToBeAdded);
             String id = savedMeeting.getMeetId();
+            System.out.println("id " + id);
             List<EmployeeMeeting> employeeMeetings = EmployeeListToStatusListMapper.map(meetingDetails,id);
+            System.out.println(employeeMeetings.size());
             this.addEmployeeMeetingStatus(employeeMeetings);
             return id;
         }catch (DataAccessException ex){
@@ -84,10 +91,16 @@ public class MeetingHandler implements MeetingSvc.Iface
 
     @Transactional
     public boolean addEmployeeMeetingStatus(List<EmployeeMeeting> list) throws TException {
+        System.out.println("U are here");
+        for (EmployeeMeeting em:list) {
+            System.out.println(em.getCompositeKey().toString());
+            System.out.println(em.toString());
+        }
         try {
             employeeMeetingRepository.saveAll(list);
             return true;
         }catch (DataAccessException ex){
+            System.out.println("in exception");
             throw new RuntimeException(ex.getMessage());
         }
 

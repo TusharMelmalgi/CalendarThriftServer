@@ -1,23 +1,26 @@
 package com.example.CalendarThriftServer.calendarpersistence.model;
 
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
+import javax.validation.constraints.Size;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 @Entity
 public class Meeting {
     @Id
+    @GeneratedValue(generator="uuid")
+    @GenericGenerator(name="uuid", strategy = "uuid")
     @Column(name = "meet_id")
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     String meetId;
 
-    @Column
+    @Column(name = "description")
     String description;
 
-    @Column
+    @Column(name = "agenda")
     String agenda;
 
     @Column(name = "owner_id")
@@ -42,9 +45,8 @@ public class Meeting {
     @Column(name = "created_date")
     LocalDateTime createdDate;
 
-    @UpdateTimestamp
-    @Column(name = "updated_date")
-    LocalDateTime updatedDate;
+    public Meeting() {
+    }
 
     public Meeting(String description, String agenda, String ownerId, LocalDate dateOfMeeting, LocalTime startTime, LocalTime endTime, int roomId, boolean isAvailable) {
         this.description = description;
@@ -95,10 +97,6 @@ public class Meeting {
 
     public LocalDateTime getCreatedDate() {
         return createdDate;
-    }
-
-    public LocalDateTime getUpdatedDate() {
-        return updatedDate;
     }
 
     public void setMeetId(String meetId) {

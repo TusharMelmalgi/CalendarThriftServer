@@ -47,7 +47,7 @@ class MeetingHandlerTest {
             }
         };
 
-        Mockito.when(meetingRepository.cancelMeetingOfEmployee(Mockito.anyString(),Mockito.any(LocalDate.class))).thenThrow(dataAccessException);
+        Mockito.when(meetingRepository.cancelMeetingOfEmployee(Mockito.anyString())).thenThrow(dataAccessException);
         assertThrows(RuntimeException.class,()->meetingHandler.cancelMeetingOfRemovedEmployee(employeeId));
 
     }
@@ -55,8 +55,8 @@ class MeetingHandlerTest {
     @Test
     public void meetingHandlerTest_cancelMeetingForRemovedEmployeeSuccess() throws TException {
         String employeeId = "xyz-15";
-        Mockito.when(employeeMeetingRepository.updateStatusForCancelledMeeting(Mockito.anyString(),Mockito.any(LocalDate.class))).thenReturn(true);
-        Mockito.when(meetingRepository.cancelMeetingOfEmployee(Mockito.anyString(),Mockito.any(LocalDate.class))).thenReturn(true);
+        Mockito.when(employeeMeetingRepository.updateStatusForCancelledMeeting(Mockito.anyString())).thenReturn(2);
+        Mockito.when(meetingRepository.cancelMeetingOfEmployee(Mockito.anyString())).thenReturn(2);
         assertTrue(meetingHandler.cancelMeetingOfRemovedEmployee(employeeId));
     }
 
@@ -69,14 +69,14 @@ class MeetingHandlerTest {
                 return super.getMessage();
             }
         };
-        Mockito.when(employeeMeetingRepository.updateStatusForRemovedEmployee(Mockito.anyString(),Mockito.any(LocalDate.class))).thenThrow(dataAccessException);
+        Mockito.when(employeeMeetingRepository.updateStatusForRemovedEmployee(Mockito.anyString())).thenThrow(dataAccessException);
         assertThrows(RuntimeException.class,()-> meetingHandler.updateStatusOfRemovedEmployee(employeeId));
     }
 
     @Test
     public void meetingHandlerTest_updateStatusOfRemovedEmployeeSuccess() throws TException{
         String employeeId = "xyz-12";
-        Mockito.when(employeeMeetingRepository.updateStatusForRemovedEmployee(Mockito.anyString(),Mockito.any(LocalDate.class))).thenReturn(true);
+        Mockito.when(employeeMeetingRepository.updateStatusForRemovedEmployee(Mockito.anyString())).thenReturn(4);
         assertTrue(meetingHandler.updateStatusOfRemovedEmployee(employeeId));
     }
 
@@ -109,7 +109,7 @@ class MeetingHandlerTest {
 
         Mockito.when(meetingRepository.checkEmployeeAvailability(Mockito.any(),Mockito.any(),Mockito.any(),Mockito.any())).thenReturn(Arrays.asList());
         List<String > employeeAvailable = meetingHandler.checkEmployeeAvailability(employeeAvailabilityDataRequest);
-        assertEquals("All employees free",employeeAvailable.get(0));
+        assertEquals(0,employeeAvailable.size());
     }
 
     @Test

@@ -33,4 +33,16 @@ public class EmployeeMeeting {
 
     @Column
     LocalDate date;
+
+    public EmployeeMeeting() {
+    }
+
+    @Override
+    public String toString() {
+        return "EmployeeMeeting{" +
+                "compositeKey=" + compositeKey +
+                ", status='" + status + '\'' +
+                ", date=" + date +
+                '}';
+    }
 }
