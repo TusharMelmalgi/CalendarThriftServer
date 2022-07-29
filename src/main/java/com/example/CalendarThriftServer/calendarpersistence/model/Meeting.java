@@ -12,10 +12,9 @@ import java.time.LocalTime;
 @Entity
 public class Meeting {
     @Id
-    @GeneratedValue(generator="uuid")
-    @GenericGenerator(name="uuid", strategy = "uuid")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "meet_id")
-    String meetId;
+    int meetId;
 
     @Column(name = "description")
     String description;
@@ -59,7 +58,7 @@ public class Meeting {
         this.isAvailable = isAvailable;
     }
 
-    public String getMeetId() {
+    public int getMeetId() {
         return meetId;
     }
 
@@ -99,7 +98,7 @@ public class Meeting {
         return createdDate;
     }
 
-    public void setMeetId(String meetId) {
+    public void setMeetId(int meetId) {
         this.meetId = meetId;
     }
 }

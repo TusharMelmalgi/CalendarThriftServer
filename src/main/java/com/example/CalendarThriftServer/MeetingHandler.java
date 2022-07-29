@@ -73,12 +73,12 @@ public class MeetingHandler implements MeetingSvc.Iface
 
     @Override
     @Transactional
-    public String addMeetingDetails(MeetingDetails meetingDetails) throws TException {
+    public int addMeetingDetails(MeetingDetails meetingDetails) throws TException {
         Meeting meetingToBeAdded = MeetingDetailsToMeetingMapper.map(meetingDetails);
         try {
             System.out.println("here");
             Meeting savedMeeting = meetingRepository.save(meetingToBeAdded);
-            String id = savedMeeting.getMeetId();
+            int id = savedMeeting.getMeetId();
             System.out.println("id " + id);
             List<EmployeeMeeting> employeeMeetings = EmployeeListToStatusListMapper.map(meetingDetails,id);
             System.out.println(employeeMeetings.size());

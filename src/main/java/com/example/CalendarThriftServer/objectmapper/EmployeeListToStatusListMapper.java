@@ -28,7 +28,7 @@ public class EmployeeListToStatusListMapper {
     public Date getDateOfMeeting() {
         return dateOfMeeting;
     }
-    public static List<EmployeeMeeting> map(MeetingDetails meetingDetails, String meetingId){
+    public static List<EmployeeMeeting> map(MeetingDetails meetingDetails, int meetingId){
         List<String> listOfEmployeeId = meetingDetails.getListOfEmployee();
         Date date = meetingDetails.getDateOfMeeting();
         LocalDate dateOfMeeting = LocalDate.of(date.getYear(),date.getMonth(),date.getDayOfMonth());

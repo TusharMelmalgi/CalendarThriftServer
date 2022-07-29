@@ -10,7 +10,7 @@ public class CompositeKey implements Serializable {
     @Column(name = "employee_id")
     String empId;
     @Column(name = "meeting_id")
-    String meetId;
+    int meetId;
 
     public CompositeKey() {
     }
@@ -19,11 +19,11 @@ public class CompositeKey implements Serializable {
         return empId;
     }
 
-    public String getMeetId() {
+    public int getMeetId() {
         return meetId;
     }
 
-    public CompositeKey(String empId, String meetId) {
+    public CompositeKey(String empId, int meetId) {
         this.empId = empId;
         this.meetId = meetId;
     }

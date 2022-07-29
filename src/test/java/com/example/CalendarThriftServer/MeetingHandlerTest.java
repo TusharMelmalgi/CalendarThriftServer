@@ -163,19 +163,19 @@ class MeetingHandlerTest {
         Mockito.when(meetingRepository.save(Mockito.any(Meeting.class))).thenAnswer(new Answer<Object>() {
             @Override
             public Meeting answer(InvocationOnMock invocation) throws Throwable {
-                meetingTest.setMeetId("20145");
+                meetingTest.setMeetId(20145);
                 return meetingTest;
             }
         });
-        String meetingId = meetingHandler.addMeetingDetails(meetingDetails);
-        assertEquals("20145",meetingId);
+        int meetingId = meetingHandler.addMeetingDetails(meetingDetails);
+        assertEquals(20145,meetingId);
     }
     @Test
     public void meetingHandlerTest_addEmployeeMeetingStatus_Fail(){
         List<EmployeeMeeting> employeeStatusRequests = new ArrayList<EmployeeMeeting>();
-        employeeStatusRequests.add(new EmployeeMeeting(new CompositeKey("xyz-12","2"),"pending",LocalDate.of(2022,8,12)));
-        employeeStatusRequests.add(new EmployeeMeeting(new CompositeKey("xyz-14","2"),"pending",LocalDate.of(2022,8,12)));
-        employeeStatusRequests.add(new EmployeeMeeting(new CompositeKey("xyz-16","2"),"pending",LocalDate.of(2022,8,12)));
+        employeeStatusRequests.add(new EmployeeMeeting(new CompositeKey("xyz-12",2),"pending",LocalDate.of(2022,8,12)));
+        employeeStatusRequests.add(new EmployeeMeeting(new CompositeKey("xyz-14",2),"pending",LocalDate.of(2022,8,12)));
+        employeeStatusRequests.add(new EmployeeMeeting(new CompositeKey("xyz-16",2),"pending",LocalDate.of(2022,8,12)));
         DataAccessException dataAccessException = new DataAccessException("Data cannot be accessed") {
             @Override
             public String getMessage() {
@@ -188,9 +188,9 @@ class MeetingHandlerTest {
     @Test
     public void meetingHandlerTest_addEmployeeMeetingStatus_Success() throws TException {
         List<EmployeeMeeting> employeeStatusRequests = new ArrayList<EmployeeMeeting>();
-        employeeStatusRequests.add(new EmployeeMeeting(new CompositeKey("xyz-12","2"),"pending",LocalDate.of(2022,8,12)));
-        employeeStatusRequests.add(new EmployeeMeeting(new CompositeKey("xyz-14","2"),"pending",LocalDate.of(2022,8,12)));
-        employeeStatusRequests.add(new EmployeeMeeting(new CompositeKey("xyz-16","2"),"pending",LocalDate.of(2022,8,12)));
+        employeeStatusRequests.add(new EmployeeMeeting(new CompositeKey("xyz-12",2),"pending",LocalDate.of(2022,8,12)));
+        employeeStatusRequests.add(new EmployeeMeeting(new CompositeKey("xyz-14",2),"pending",LocalDate.of(2022,8,12)));
+        employeeStatusRequests.add(new EmployeeMeeting(new CompositeKey("xyz-16",2),"pending",LocalDate.of(2022,8,12)));
         boolean responseFromEmployeeMeeting = meetingHandler.addEmployeeMeetingStatus(employeeStatusRequests);
         assertTrue(responseFromEmployeeMeeting);
     }
