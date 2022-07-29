@@ -1,5 +1,6 @@
 package com.example.CalendarThriftServer.calendarpersistence.repository;
 
+import com.example.CalendarThriftServer.calendarpersistence.model.EmployeeMeeting;
 import com.example.CalendarThriftServer.calendarpersistence.model.Meeting;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -12,7 +13,7 @@ import java.time.LocalTime;
 import java.util.List;
 
 @Repository
-public interface MeetingRepository extends CrudRepository<Meeting,String> {
+public interface MeetingRepository extends CrudRepository<Meeting,Integer> {
 
     @Modifying
     @Query(value = "UPDATE meeting m SET m.is_available = 0 WHERE m.owner_id = :employee_id AND m.date_of_meeting> CURDATE()" , nativeQuery = true)
@@ -26,4 +27,8 @@ public interface MeetingRepository extends CrudRepository<Meeting,String> {
 
     @Query(value = "select count(1) from meeting m where m.room_id = :roomId AND m.is_available = true AND m.date_of_meeting =:date AND (m.end_time>:starttime and m.start_time<:endtime)",nativeQuery = true)
     public int meetingRoomAvailable(@Param("roomId")Integer roomId,@Param("date")LocalDate date,@Param("starttime") LocalTime startTime,@Param("endtime")LocalTime endTime);
+
+    @Query(value = "select * from meeting m where m.meet_id IN (:listOfMeetingId)",nativeQuery = true)
+    List<Meeting> findAllById(@Param("listOfMeetingId")List<Integer> listOfMeetingId);
+
 }

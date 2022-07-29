@@ -7,6 +7,7 @@ import com.example.CalendarThriftServer.calendarpersistence.repository.MeetingRe
 import com.example.CalendarThriftServer.objectmapper.DateToLocalDateMapper;
 import com.example.CalendarThriftServer.objectmapper.EmployeeListToStatusListMapper;
 import com.example.CalendarThriftServer.objectmapper.MeetingDetailsToMeetingMapper;
+import com.example.CalendarThriftServer.objectmapper.MeetingsToEmployeeMeetingDetails;
 import org.apache.thrift.TException;
 import org.example.CalendarThriftConfiguration.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -118,6 +119,14 @@ public class MeetingHandler implements MeetingSvc.Iface
 
     @Override
     public List<EmployeeMeetingDetails> getEmployeeMeetingDetails(String s) throws TException {
-        return null;
+        List<EmployeeMeeting> employeeMeetingList = employeeMeetingRepository.findMeetingsForEmployee(s);
+        List<Integer> meetingIdList = new ArrayList<>();
+        for(EmployeeMeeting employeeMeeting:employeeMeetingList){
+            meetingIdList.add(employeeMeeting.getCompositeKey().getMeetId());
+        }
+        System.out.println(meetingIdList);
+        List<Meeting> meetingsForEmployee = meetingRepository.findAllById(meetingIdList);
+        List<EmployeeMeetingDetails> employeeMeetingDetails = MeetingsToEmployeeMeetingDetails.map(employeeMeetingList,meetingsForEmployee);
+        return employeeMeetingDetails;
     }
 }
