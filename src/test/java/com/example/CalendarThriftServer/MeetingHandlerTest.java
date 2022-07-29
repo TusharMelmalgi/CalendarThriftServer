@@ -8,6 +8,7 @@ import com.example.CalendarThriftServer.calendarpersistence.repository.EmployeeM
 import com.example.CalendarThriftServer.calendarpersistence.repository.MeetingRepository;
 import org.apache.thrift.TException;
 import org.example.CalendarThriftConfiguration.*;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -263,6 +264,41 @@ class MeetingHandlerTest {
                 LocalTime.of(14,00,00),LocalTime.of(15,00,00))).thenReturn(0);
         boolean availability = meetingHandler.meetingRoomAvailable(meetingRoomAvailableDataRequest);
         assertTrue(availability);
+    }
+
+    @Test
+    public void meetingHandlerTest_getEmployeeMeetingDetailsSuccess() throws TException{
+        String employeeId = "xyz-12";
+        CompositeKey ck = new CompositeKey(employeeId,2);
+        Meeting mockTestMeeting = new Meeting(
+                "test",
+                "test agenda",
+                "xyz-10",
+                LocalDate.of(2022,8,22),
+                LocalTime.of(12,00,00),
+                LocalTime.of(12,00,00),
+                2,
+                true
+        );
+        Mockito.when(employeeMeetingRepository.findMeetingsForEmployee(Mockito.anyString())).thenReturn(Arrays.asList(new EmployeeMeeting(ck,"accepted",LocalDate.of(2022,8,22))));
+        Mockito.when(meetingRepository.findAllById(Mockito.any())).thenReturn(Arrays.asList(mockTestMeeting));
+        List<EmployeeMeetingDetails> employeeMeetingDetails = meetingHandler.getEmployeeMeetingDetails(employeeId);
+        Assertions.assertNotNull(employeeMeetingDetails);
+        assertEquals("accepted",employeeMeetingDetails.get(0).getStatus());
+    }
+
+    @Test
+    public void meetingHandlerTest_getEmployeeMeetingDetailsFail() throws TException{
+        String employeeId = "xyz-12";
+        DataAccessException dataAccessException = new DataAccessException("Data cannot be accessed") {
+            @Override
+            public String getMessage() {
+                return super.getMessage();
+            }
+        };
+        Mockito.when(employeeMeetingRepository.findMeetingsForEmployee(Mockito.anyString())).thenThrow(dataAccessException);
+        assertThrows(DataAccessException.class,()->meetingHandler.getEmployeeMeetingDetails(employeeId));
+
     }
 
 }

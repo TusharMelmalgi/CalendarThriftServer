@@ -8,6 +8,8 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface EmployeeMeetingRepository extends CrudRepository<EmployeeMeeting, CompositeKey> {
 
@@ -19,4 +21,7 @@ public interface EmployeeMeetingRepository extends CrudRepository<EmployeeMeetin
     @Modifying
     @Query(value = "UPDATE  employee_meeting em SET em.status = 'removed' WHERE em.employee_id = :employee_id AND em.date> CURDATE()",nativeQuery = true)
     public Integer updateStatusForRemovedEmployee(@Param("employee_id")String employeeId);
+
+    @Query(value = "SELECT * FROM employee_meeting em WHERE em.employee_id = :employee_id AND em.date = CURDATE()",nativeQuery = true)
+    public List<EmployeeMeeting> findMeetingsForEmployee(@Param("employee_id")String employeeId);
 }
