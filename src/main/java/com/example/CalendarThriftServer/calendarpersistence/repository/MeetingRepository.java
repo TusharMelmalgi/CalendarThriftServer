@@ -14,13 +14,10 @@ import java.util.List;
 @Repository
 public interface MeetingRepository extends CrudRepository<Meeting,String> {
 
-    //here
     @Modifying
     @Query(value = "UPDATE meeting m SET m.is_available = 0 WHERE m.owner_id = :employee_id AND m.date_of_meeting> CURDATE()" , nativeQuery = true)
     public Integer cancelMeetingOfEmployee(@Param("employee_id") String employeeId);
 
-
-    //here
     @Query(value = "SELECT em.employee_id FROM meeting m JOIN employee_meeting em ON m.meet_id = em.meeting_id WHERE em.employee_id IN (:list_of_employee) AND m.date_of_meeting =:date AND em.status='accepted' AND (m.end_time>:starttime and m.start_time<:endtime)",nativeQuery = true)
     public List<String> checkEmployeeAvailability(@Param("list_of_employee")List<String> listOfEmployee,@Param("date")LocalDate date,@Param("starttime") LocalTime startTime,@Param("endtime")LocalTime endTime);
 

@@ -61,10 +61,7 @@ public class MeetingHandler implements MeetingSvc.Iface
     @Override
     public List<String> checkEmployeeAvailability(EmployeeAvailabilityDataRequest employeeAvailabilityDataRequest) throws TException {
         DateToLocalDateMapper formattedDateTime = DateToLocalDateMapper.map(employeeAvailabilityDataRequest.dateOfMeeting,employeeAvailabilityDataRequest.getStartTime(),employeeAvailabilityDataRequest.getEndTime());
-        System.out.println("inside this");
         List<String > employeesNotAvailable = meetingRepository.checkEmployeeAvailability(employeeAvailabilityDataRequest.getListOfEmployeeId(),formattedDateTime.getDateOfMeeting(),formattedDateTime.getStartTime(),formattedDateTime.getEndTime());
-        System.out.println("outside this");
-        System.out.println(employeesNotAvailable.size());
         if(employeesNotAvailable.size()>0){
             return employeesNotAvailable;
         }
@@ -76,12 +73,9 @@ public class MeetingHandler implements MeetingSvc.Iface
     public int addMeetingDetails(MeetingDetails meetingDetails) throws TException {
         Meeting meetingToBeAdded = MeetingDetailsToMeetingMapper.map(meetingDetails);
         try {
-            System.out.println("here");
             Meeting savedMeeting = meetingRepository.save(meetingToBeAdded);
             int id = savedMeeting.getMeetId();
-            System.out.println("id " + id);
             List<EmployeeMeeting> employeeMeetings = EmployeeListToStatusListMapper.map(meetingDetails,id);
-            System.out.println(employeeMeetings.size());
             this.addEmployeeMeetingStatus(employeeMeetings);
             return id;
         }catch (DataAccessException ex){
@@ -91,16 +85,10 @@ public class MeetingHandler implements MeetingSvc.Iface
 
     @Transactional
     public boolean addEmployeeMeetingStatus(List<EmployeeMeeting> list) throws TException {
-        System.out.println("U are here");
-        for (EmployeeMeeting em:list) {
-            System.out.println(em.getCompositeKey().toString());
-            System.out.println(em.toString());
-        }
         try {
             employeeMeetingRepository.saveAll(list);
             return true;
         }catch (DataAccessException ex){
-            System.out.println("in exception");
             throw new RuntimeException(ex.getMessage());
         }
 
@@ -126,5 +114,10 @@ public class MeetingHandler implements MeetingSvc.Iface
             return false;
         }
         return true;
+    }
+
+    @Override
+    public List<EmployeeMeetingDetails> getEmployeeMeetingDetails(String s) throws TException {
+        return null;
     }
 }

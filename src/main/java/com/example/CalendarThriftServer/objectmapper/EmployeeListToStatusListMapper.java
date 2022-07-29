@@ -36,7 +36,7 @@ public class EmployeeListToStatusListMapper {
         for (String employeeId : listOfEmployeeId)
         {
             CompositeKey compositeKey1 = new CompositeKey(employeeId,meetingId);
-            EmployeeMeeting meetingStatus = new EmployeeMeeting(compositeKey1,"pending",dateOfMeeting);
+            EmployeeMeeting meetingStatus = new EmployeeMeeting(compositeKey1,"accepted",dateOfMeeting);
             employeeMeetings.add(meetingStatus);
         }
         return employeeMeetings;

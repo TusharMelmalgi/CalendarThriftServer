@@ -11,7 +11,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface EmployeeMeetingRepository extends CrudRepository<EmployeeMeeting, CompositeKey> {
 
-    //here
     @Modifying
     @Query(value = "UPDATE employee_meeting em SET em.status = 'cancelled' WHERE em.meeting_id IN (SELECT m.meet_id FROM meeting m WHERE m.owner_id = :employee_id AND m.date_of_meeting> CURDATE())",nativeQuery = true)
     public Integer updateStatusForCancelledMeeting(@Param("employee_id") String employeeId);

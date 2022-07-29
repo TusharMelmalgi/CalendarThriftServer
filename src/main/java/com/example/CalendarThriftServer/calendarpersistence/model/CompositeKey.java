@@ -27,12 +27,4 @@ public class CompositeKey implements Serializable {
         this.empId = empId;
         this.meetId = meetId;
     }
-
-    @Override
-    public String toString() {
-        return "CompositeKey{" +
-                "empId='" + empId + '\'' +
-                ", meetId='" + meetId + '\'' +
-                '}';
-    }
 }
