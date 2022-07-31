@@ -4,12 +4,13 @@ import com.example.CalendarThriftServer.calendarpersistence.model.EmployeeMeetin
 import com.example.CalendarThriftServer.calendarpersistence.model.Meeting;
 import com.example.CalendarThriftServer.calendarpersistence.repository.EmployeeMeetingRepository;
 import com.example.CalendarThriftServer.calendarpersistence.repository.MeetingRepository;
-import com.example.CalendarThriftServer.objectmapper.DateToLocalDateMapper;
-import com.example.CalendarThriftServer.objectmapper.EmployeeListToStatusListMapper;
-import com.example.CalendarThriftServer.objectmapper.MeetingDetailsToMeetingMapper;
-import com.example.CalendarThriftServer.objectmapper.MeetingsToEmployeeMeetingDetails;
+import com.example.CalendarThriftServer.objectmapper.*;
+import com.example.CalendarThriftServer.service.Implementation.MeetingServiceImpl;
+import com.example.CalendarThriftServer.service.Interface.MeetingService;
 import org.apache.thrift.TException;
 import org.example.CalendarThriftConfiguration.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
@@ -18,11 +19,16 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 @Service
 public class MeetingHandler implements MeetingSvc.Iface
 {
+    Logger logger = LoggerFactory.getLogger(MeetingHandler.class);
+
+    @Autowired
+    MeetingService meetingService;
     @Autowired
     MeetingRepository meetingRepository;
 
@@ -36,25 +42,33 @@ public class MeetingHandler implements MeetingSvc.Iface
 
     @Transactional
     @Override
-    public boolean cancelMeetingOfRemovedEmployee(String s) throws TException {
+    public boolean cancelMeetingOfRemovedEmployee(String employeeId) throws TException {
         LocalDate date = LocalDate.now();
         try {
-            meetingRepository.cancelMeetingOfEmployee(s);
-            employeeMeetingRepository.updateStatusForCancelledMeeting(s);
+            meetingRepository.cancelMeetingOfEmployee(employeeId);
+            employeeMeetingRepository.updateStatusForCancelledMeeting(employeeId);
             return true;
         }catch (DataAccessException ex){
+            logger.error("error trying to cancel meetings for removed employee",ex);
+            throw new RuntimeException(ex.getMessage());
+        }catch (Exception ex){
+            logger.error("error trying to cancel meetings for removed employee",ex);
             throw new RuntimeException(ex.getMessage());
         }
     }
 
     @Transactional
     @Override
-    public boolean updateStatusOfRemovedEmployee(String s) throws TException {
+    public boolean updateStatusOfRemovedEmployee(String employeeId) throws TException {
         LocalDate date = LocalDate.now();
         try {
-            employeeMeetingRepository.updateStatusForRemovedEmployee(s);
+            employeeMeetingRepository.updateStatusForRemovedEmployee(employeeId);
             return true;
         }catch (DataAccessException ex){
+            logger.error("error trying to update status for removed employee",ex);
+            throw new RuntimeException(ex.getMessage());
+        }catch (Exception ex){
+            logger.error("error trying to update status for removed employee",ex);
             throw new RuntimeException(ex.getMessage());
         }
     }
@@ -66,30 +80,46 @@ public class MeetingHandler implements MeetingSvc.Iface
         if(employeesNotAvailable.size()>0){
             return employeesNotAvailable;
         }
-        return Arrays.asList();
+        return Collections.emptyList();
     }
 
     @Override
     @Transactional
     public int addMeetingDetails(MeetingDetails meetingDetails) throws TException {
         Meeting meetingToBeAdded = MeetingDetailsToMeetingMapper.map(meetingDetails);
-        try {
-            Meeting savedMeeting = meetingRepository.save(meetingToBeAdded);
-            int id = savedMeeting.getMeetId();
-            List<EmployeeMeeting> employeeMeetings = EmployeeListToStatusListMapper.map(meetingDetails,id);
-            this.addEmployeeMeetingStatus(employeeMeetings);
-            return id;
-        }catch (DataAccessException ex){
-            throw new RuntimeException(ex.getMessage());
+        MeetingRoomAvailableDataRequest checkMeetingRoom = new MeetingRoomAvailableDataRequest(
+                meetingDetails.getRoomId(),
+                meetingDetails.getDateOfMeeting(),
+                meetingDetails.getStartTime(),
+                meetingDetails.getEndTime()
+        );
+        boolean roomAvailability = meetingRoomAvailable(checkMeetingRoom);
+        if(!roomAvailability){
+            throw new RuntimeException("meeting room is occupied, unable to process request");
         }
+        List<String> listOfEmployee = new ArrayList<>(meetingDetails.getListOfEmployee());
+        listOfEmployee.add(meetingDetails.getOwnerId());
+        EmployeeAvailabilityDataRequest employeeAvailabilityDataRequest = MeetingDetailsToEmployeeAvailability.map(meetingDetails);
+        List<String> busyEmployee = checkEmployeeAvailability(employeeAvailabilityDataRequest);
+        if(busyEmployee.size()>0){
+            throw new RuntimeException("employee is busy, unable to process request");
+        }
+        int id = meetingService.addMeetingDetailsToDataBase(meetingToBeAdded);
+        List<EmployeeMeeting> employeeMeetings = EmployeeListToStatusListMapper.map(meetingDetails,id);
+        this.addEmployeeMeetingStatus(employeeMeetings);
+        return id;
     }
 
     @Transactional
-    public boolean addEmployeeMeetingStatus(List<EmployeeMeeting> list) throws TException {
+    public boolean addEmployeeMeetingStatus(List<EmployeeMeeting> employeeMeetingList) throws TException {
         try {
-            employeeMeetingRepository.saveAll(list);
+            employeeMeetingRepository.saveAll(employeeMeetingList);
             return true;
         }catch (DataAccessException ex){
+            logger.error("error trying to add employee status",ex);
+            throw new RuntimeException(ex.getMessage());
+        }catch (Exception ex){
+            logger.error("error trying to add employee status",ex);
             throw new RuntimeException(ex.getMessage());
         }
 
@@ -97,36 +127,52 @@ public class MeetingHandler implements MeetingSvc.Iface
     @Override
     public int findFreeMeetingRoom(FindFreeMeetingRoomDataRequest findFreeMeetingRoomDataRequest) throws TException {
         DateToLocalDateMapper formattedDateTime = DateToLocalDateMapper.map(findFreeMeetingRoomDataRequest.getDateOfMeeting(),findFreeMeetingRoomDataRequest.getStartTime(),findFreeMeetingRoomDataRequest.getEndTime());
-        List<Integer> occupiedRooms = new ArrayList<>(meetingRepository.findFreeMeetingRoom(findFreeMeetingRoomDataRequest.getMeetingRoomsInOffice(),formattedDateTime.getDateOfMeeting(),formattedDateTime.getStartTime(),formattedDateTime.getEndTime()));
-        List<Integer> roomsInOffice = new ArrayList<>(findFreeMeetingRoomDataRequest.getMeetingRoomsInOffice());
-        roomsInOffice.removeAll(occupiedRooms);
-        if(roomsInOffice.size()==0){
-            return 0;
+        try {
+            List<Integer> occupiedRooms = new ArrayList<>(meetingRepository.findFreeMeetingRoom(findFreeMeetingRoomDataRequest.getMeetingRoomsInOffice(),formattedDateTime.getDateOfMeeting(),formattedDateTime.getStartTime(),formattedDateTime.getEndTime()));
+            List<Integer> roomsInOffice = new ArrayList<>(findFreeMeetingRoomDataRequest.getMeetingRoomsInOffice());
+            roomsInOffice.removeAll(occupiedRooms);
+            if(roomsInOffice.size()==0){
+                return 0;
+            }
+            return roomsInOffice.get(0);
+        }catch (Exception ex){
+            logger.error("error trying to access meetings, to find free meeting room",ex);
+            throw new RuntimeException(ex);
         }
-        return roomsInOffice.get(0);
+
     }
 
     @Override
     public boolean meetingRoomAvailable(MeetingRoomAvailableDataRequest meetingRoomAvailableDataRequest) throws TException {
-
-        DateToLocalDateMapper formattedDateTime = DateToLocalDateMapper.map(meetingRoomAvailableDataRequest.dateOfMeeting,meetingRoomAvailableDataRequest.getStartTime(),meetingRoomAvailableDataRequest.getEndTime());
-        int meetingsInRoom = meetingRepository.meetingRoomAvailable(meetingRoomAvailableDataRequest.getRoomId(),formattedDateTime.getDateOfMeeting(),formattedDateTime.getStartTime(),formattedDateTime.getEndTime());
-        if(meetingsInRoom>0){
-            return false;
+        try {
+            DateToLocalDateMapper formattedDateTime = DateToLocalDateMapper.map(meetingRoomAvailableDataRequest.getDateOfMeeting(),meetingRoomAvailableDataRequest.getStartTime(),meetingRoomAvailableDataRequest.getEndTime());
+            int meetingsInRoom = meetingRepository.meetingRoomAvailable(meetingRoomAvailableDataRequest.getRoomId(),formattedDateTime.getDateOfMeeting(),formattedDateTime.getStartTime(),formattedDateTime.getEndTime());
+            if(meetingsInRoom>0){
+                return false;
+            }
+            return true;
+        }catch (Exception ex){
+            logger.error("error trying to check meeting room availability",ex);
+            throw new RuntimeException(ex.getMessage());
         }
-        return true;
     }
 
     @Override
-    public List<EmployeeMeetingDetails> getEmployeeMeetingDetails(String s) throws TException {
-        List<EmployeeMeeting> employeeMeetingList = employeeMeetingRepository.findMeetingsForEmployee(s);
-        List<Integer> meetingIdList = new ArrayList<>();
-        for(EmployeeMeeting employeeMeeting:employeeMeetingList){
-            meetingIdList.add(employeeMeeting.getCompositeKey().getMeetId());
+    public List<EmployeeMeetingDetails> getEmployeeMeetingDetails(String employeeId) throws TException {
+        try {
+            List<EmployeeMeeting> employeeMeetingList = employeeMeetingRepository.findMeetingsForEmployee(employeeId);
+            List<Integer> meetingIdList = new ArrayList<>();
+            for(EmployeeMeeting employeeMeeting:employeeMeetingList){
+                meetingIdList.add(employeeMeeting.getCompositeKey().getMeetId());
+            }
+            System.out.println(meetingIdList);
+            List<Meeting> meetingsForEmployee = meetingRepository.findAllById(meetingIdList);
+            List<EmployeeMeetingDetails> employeeMeetingDetails = MeetingsToEmployeeMeetingDetails.map(employeeMeetingList,meetingsForEmployee);
+            return employeeMeetingDetails;
+        }catch (Exception ex){
+            logger.error("error trying to fetch meetings of employee",ex);
+            throw new RuntimeException(ex);
         }
-        System.out.println(meetingIdList);
-        List<Meeting> meetingsForEmployee = meetingRepository.findAllById(meetingIdList);
-        List<EmployeeMeetingDetails> employeeMeetingDetails = MeetingsToEmployeeMeetingDetails.map(employeeMeetingList,meetingsForEmployee);
-        return employeeMeetingDetails;
+
     }
 }
