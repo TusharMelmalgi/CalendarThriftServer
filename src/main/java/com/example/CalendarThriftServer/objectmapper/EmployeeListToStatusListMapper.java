@@ -11,23 +11,6 @@ import java.util.List;
 
 public class EmployeeListToStatusListMapper {
 
-    CompositeKey compositeKey;
-
-    public String status;
-
-    public Date dateOfMeeting;
-
-    public CompositeKey getCompositeKey() {
-        return compositeKey;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public Date getDateOfMeeting() {
-        return dateOfMeeting;
-    }
     public static List<EmployeeMeeting> map(MeetingDetails meetingDetails, int meetingId){
         List<String> listOfEmployeeId = meetingDetails.getListOfEmployee();
         Date date = meetingDetails.getDateOfMeeting();
