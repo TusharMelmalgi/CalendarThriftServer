@@ -158,9 +158,10 @@ public class MeetingHandler implements MeetingSvc.Iface
     }
 
     @Override
-    public List<EmployeeMeetingDetails> getEmployeeMeetingDetails(String employeeId) throws TException {
+    public List<EmployeeMeetingDetails> getEmployeeMeetingDetails(String employeeId, Date customDate) throws TException {
         try {
-            List<EmployeeMeeting> employeeMeetingList = employeeMeetingRepository.findMeetingsForEmployee(employeeId);
+            LocalDate dateOfFetch = LocalDate.of(customDate.getYear(),customDate.getMonth(),customDate.getDayOfMonth());
+            List<EmployeeMeeting> employeeMeetingList = employeeMeetingRepository.findMeetingsForEmployee(employeeId,dateOfFetch);
             List<Integer> meetingIdList = new ArrayList<>();
             for(EmployeeMeeting employeeMeeting:employeeMeetingList){
                 meetingIdList.add(employeeMeeting.getCompositeKey().getMeetId());
@@ -173,6 +174,6 @@ public class MeetingHandler implements MeetingSvc.Iface
             logger.error("error trying to fetch meetings of employee",ex);
             throw new RuntimeException(ex);
         }
-
     }
+
 }
