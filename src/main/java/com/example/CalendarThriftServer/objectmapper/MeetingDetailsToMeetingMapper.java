@@ -10,47 +10,6 @@ import java.time.LocalTime;
 
 public class MeetingDetailsToMeetingMapper {
 
-    String description;
-
-    String agenda;
-
-    String ownerId;
-
-    LocalDate dateOfMeeting;
-
-    LocalTime startTime;
-
-    LocalTime endTime;
-
-    int roomId;
-
-    public String getDescription() {
-        return description;
-    }
-
-    public String getAgenda() {
-        return agenda;
-    }
-
-    public String getOwnerId() {
-        return ownerId;
-    }
-
-    public LocalDate getDateOfMeeting() {
-        return dateOfMeeting;
-    }
-
-    public LocalTime getStartTime() {
-        return startTime;
-    }
-
-    public LocalTime getEndTime() {
-        return endTime;
-    }
-
-    public int getRoomId() {
-        return roomId;
-    }
     public static Meeting map(MeetingDetails meetingDetails){
         Date date = meetingDetails.getDateOfMeeting();
         Time startTimeFormat = meetingDetails.getStartTime();
