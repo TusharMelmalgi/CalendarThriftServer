@@ -318,6 +318,7 @@ class MeetingHandlerTest {
     @Test
     public void meetingHandlerTest_getEmployeeMeetingDetailsSuccess() throws TException{
         String employeeId = "xyz-12";
+        Date dateOfFetch = new Date(22,8,2022);
         CompositeKey ck = new CompositeKey(employeeId,2);
         Meeting mockTestMeeting = new Meeting(
                 "test",
@@ -329,9 +330,9 @@ class MeetingHandlerTest {
                 2,
                 true
         );
-        Mockito.when(employeeMeetingRepository.findMeetingsForEmployee(Mockito.anyString())).thenReturn(Arrays.asList(new EmployeeMeeting(ck,"accepted",LocalDate.of(2022,8,22))));
+        Mockito.when(employeeMeetingRepository.findMeetingsForEmployee(Mockito.anyString(),Mockito.any(LocalDate.class))).thenReturn(Arrays.asList(new EmployeeMeeting(ck,"accepted",LocalDate.of(2022,8,22))));
         Mockito.when(meetingRepository.findAllById(Mockito.any())).thenReturn(Arrays.asList(mockTestMeeting));
-        List<EmployeeMeetingDetails> employeeMeetingDetails = meetingHandler.getEmployeeMeetingDetails(employeeId);
+        List<EmployeeMeetingDetails> employeeMeetingDetails = meetingHandler.getEmployeeMeetingDetails(employeeId,dateOfFetch);
         Assertions.assertNotNull(employeeMeetingDetails);
         assertEquals("accepted",employeeMeetingDetails.get(0).getStatus());
     }
@@ -345,8 +346,9 @@ class MeetingHandlerTest {
                 return super.getMessage();
             }
         };
-        Mockito.when(employeeMeetingRepository.findMeetingsForEmployee(Mockito.anyString())).thenThrow(dataAccessException);
-        assertThrows(RuntimeException.class,()->meetingHandler.getEmployeeMeetingDetails(employeeId));
+        Date dateOfFetch = new Date(22,8,2022);
+        Mockito.when(employeeMeetingRepository.findMeetingsForEmployee(Mockito.anyString(),Mockito.any(LocalDate.class))).thenThrow(dataAccessException);
+        assertThrows(RuntimeException.class,()->meetingHandler.getEmployeeMeetingDetails(employeeId,dateOfFetch));
 
     }
 

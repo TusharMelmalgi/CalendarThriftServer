@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -15,6 +16,7 @@ import java.util.List;
 @Repository
 public interface MeetingRepository extends CrudRepository<Meeting,Integer> {
 
+    @Transactional
     @Modifying
     @Query(value = "UPDATE meeting m SET m.is_available = 0 WHERE m.owner_id = :employee_id AND m.date_of_meeting> CURDATE()" , nativeQuery = true)
     public Integer cancelMeetingOfEmployee(@Param("employee_id") String employeeId);
